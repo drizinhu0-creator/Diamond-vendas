@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const Produto = require('../models/Produto');
 const { autocompleteProduto } = require('../autocomplete');
+const { normalizarEmoji } = require('../personalizacao');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -12,7 +13,10 @@ module.exports = {
     )
     .addStringOption((opt) => opt.setName('nome').setDescription('Nome da variação (ex: Trial 14 dias)').setRequired(true))
     .addNumberOption((opt) => opt.setName('preco').setDescription('Preço em R$').setRequired(true))
-    .addIntegerOption((opt) => opt.setName('estoque').setDescription('Quantidade em estoque').setRequired(true)),
+    .addIntegerOption((opt) => opt.setName('estoque').setDescription('Quantidade em estoque').setRequired(true))
+    .addStringOption((opt) =>
+      opt.setName('emoji').setDescription('(Opcional) Emoji desta variação no menu de seleção').setRequired(false)
+    ),
 
   async autocomplete(interaction) {
     await autocompleteProduto(interaction);
@@ -23,20 +27,32 @@ module.exports = {
     const nome = interaction.options.getString('nome');
     const preco = interaction.options.getNumber('preco');
     const estoque = interaction.options.getInteger('estoque');
+    const emojiBruto = interaction.options.getString('emoji');
+
+    let emoji;
+    if (emojiBruto !== null && emojiBruto.trim() !== '') {
+      emoji = normalizarEmoji(emojiBruto);
+      if (!emoji) {
+        return interaction.reply({
+          content: '❌ Não reconheci esse emoji. Use um emoji comum (ex: 🔥) ou um emoji do servidor (`<:nome:id>`).',
+          ephemeral: true,
+        });
+      }
+    }
 
     const produto = await Produto.findOne({ _id: produtoId, guildId: interaction.guild.id });
     if (!produto) {
       return interaction.reply({ content: '❌ Produto não encontrado.', ephemeral: true });
     }
 
-    produto.variacoes.push({ nome, preco, estoque });
+    produto.variacoes.push({ nome, preco, estoque, ...(emoji ? { emoji } : {}) });
     await produto.save();
 
     const embed = new EmbedBuilder()
       .setTitle('✅ Variação adicionada')
       .setColor(0x57f287)
       .setDescription(
-        `Produto: **${produto.nome}**\nVariação: **${nome}**\nPreço: R$ ${preco.toFixed(2)}\nEstoque: ${estoque}`
+        `Produto: **${produto.nome}**\nVariação: **${nome}**\nPreço: R$ ${preco.toFixed(2)}\nEstoque: ${estoque}${emoji ? `\nEmoji: ${emoji}` : ''}`
       );
 
     await interaction.reply({ embeds: [embed], ephemeral: true });
