@@ -39,6 +39,16 @@ for (const arquivo of fs.readdirSync(eventsPath).filter((f) => f.endsWith('.js')
   }
 }
 
+// Servidor HTTP simples para o UptimeRobot (monitor "HTTP(s)") manter o bot acordado
+const http = require('http');
+const PORTA = process.env.PORT || 3000;
+http
+  .createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Bot online');
+  })
+  .listen(PORTA, '0.0.0.0', () => console.log(`🌐 Servidor de monitoramento ativo na porta ${PORTA}`));
+
 (async () => {
   await conectarMongo();
   await client.login(process.env.DISCORD_TOKEN);
