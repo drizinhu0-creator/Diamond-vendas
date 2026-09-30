@@ -681,12 +681,7 @@ async function handleComponentInteraction(interaction, client) {
       if (!cfg?.chavePix) {
         return interaction.reply({ content: '❌ A chave Pix da loja não está mais configurada.', ephemeral: true });
       }
-      const { totalFinal } = calcularTotais(pedido);
-      const payload = gerarPayloadPix({
-        chave: cfg.chavePix, nome: cfg.nomeRecebedor, cidade: cfg.cidadeRecebedor,
-        valor: totalFinal, txid: pedido.codigo,
-      });
-      return interaction.reply({ content: `Código Pix "copia e cola":\n\`\`\`${payload}\`\`\``, ephemeral: true });
+      return interaction.reply({ content: `\`\`\`${cfg.chavePix}\`\`\``, ephemeral: true });
     }
 
     if (acao === 'confirmarpg') {
