@@ -681,7 +681,8 @@ async function handleComponentInteraction(interaction, client) {
       if (!cfg?.chavePix) {
         return interaction.reply({ content: '❌ A chave Pix da loja não está mais configurada.', ephemeral: true });
       }
-      return interaction.reply({ content: `\`\`\`${cfg.chavePix}\`\`\``, ephemeral: true });
+      const chaveLimpa = String(cfg.chavePix).replace(/["'“”‘’`]/g, '').trim();
+      return interaction.reply({ content: `\`${chaveLimpa}\``, ephemeral: true });
     }
 
     if (acao === 'confirmarpg') {
