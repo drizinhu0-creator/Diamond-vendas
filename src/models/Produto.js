@@ -5,6 +5,7 @@ const VariacaoSchema = new Schema(
     nome: { type: String, required: true, trim: true },
     preco: { type: Number, required: true, min: 0 },
     estoque: { type: Number, required: true, default: 0 },
+    emoji: { type: String },
     ativo: { type: Boolean, default: true },
   },
   { timestamps: true }
