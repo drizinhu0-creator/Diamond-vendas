@@ -70,7 +70,7 @@ module.exports = {
     }
 
     if (sub === 'chave-pix') {
-      const chave = interaction.options.getString('chave');
+      const chave = interaction.options.getString('chave').replace(/["'“”‘’`]/g, '').trim();
       const nome = interaction.options.getString('nome');
       const cidade = interaction.options.getString('cidade');
       cfg.chavePix = chave;
