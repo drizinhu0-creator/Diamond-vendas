@@ -1023,8 +1023,14 @@ async function adicionarDoPainel(interaction, client, produtoId, variacaoId) {
   const produtos = await Produto.find({ guildId: interaction.guild.id, ativo: true });
   aplicarImagensItens(pedido, produtos);
   const opcoesAddItem = construirOpcoesTodasVariacoes(produtos);
+  // Ao abrir o carrinho, marca o cliente e o cargo de Staff (isso também adiciona a equipe ao tópico privado)
+  let conteudoCarrinho = `<@${pedido.userId}>`;
+  if (criado) {
+    const cfgCarrinho = await Config.findOne({ guildId: interaction.guild.id });
+    if (cfgCarrinho?.cargoStaffId) conteudoCarrinho += ` <@&${cfgCarrinho.cargoStaffId}>`;
+  }
   const msg = await canal.send({
-    content: `<@${pedido.userId}>`,
+    content: conteudoCarrinho,
     embeds: [montarEmbedRevisao(pedido, personalizacaoOpcoes)],
     components: montarComponentesRevisao(pedido, opcoesAddItem, personalizacaoOpcoes),
   });
