@@ -77,7 +77,7 @@ function construirOpcoesVariacoesDoProduto(produto) {
       label: v.nome.slice(0, 100),
       description: `Preço: ${formatarReal(v.preco)} | Estoque: ${v.estoque > 0 ? v.estoque : 'Esgotado'}`.slice(0, 100),
       value: `${produto._id}:${v._id}`,
-      ...(produto.emoji ? { emoji: produto.emoji } : {}),
+      ...((v.emoji || produto.emoji) ? { emoji: v.emoji || produto.emoji } : {}),
     }));
 }
 
@@ -90,7 +90,7 @@ function construirOpcoesTodasVariacoes(produtos) {
         label: `${produto.nome} — ${v.nome}`.slice(0, 100),
         description: `Preço: ${formatarReal(v.preco)} | Estoque: ${v.estoque > 0 ? v.estoque : 'Esgotado'}`.slice(0, 100),
         value: `${produto._id}:${v._id}`,
-        ...(produto.emoji ? { emoji: produto.emoji } : {}),
+        ...((v.emoji || produto.emoji) ? { emoji: v.emoji || produto.emoji } : {}),
       });
     }
   }
