@@ -772,15 +772,19 @@ async function handleComponentInteraction(interaction, client) {
       await interaction.update({ components: [linhaCancelada] });
       await interaction.channel.send(`❌ Pedido cancelado por <@${interaction.user.id}>. Este canal será apagado em instantes.`);
 
+      const cancelouStaff = ehStaff(interaction, cfg);
+      const horarioCancel = `<t:${Math.floor(Date.now() / 1000)}:F>`;
+      const linhasLogCancel = [];
+      if (cancelouStaff) linhasLogCancel.push(`**VENDEDOR:** <@${interaction.user.id}>`);
+      linhasLogCancel.push(
+        `**CLIENTE:** <@${pedido.userId}>`,
+        `**HORÁRIO:** ${horarioCancel}`,
+        `**PEDIDO:** \`${pedido.codigo}\``
+      );
       const embedLogCancelPg = new EmbedBuilder()
         .setColor(0xed4245)
-        .setTitle(ehStaff(interaction, cfg) ? '❌ Pagamento cancelado pela equipe' : '❌ Pagamento cancelado pelo cliente')
-        .setDescription(`<@${interaction.user.id}> cancelou o pedido de <@${pedido.userId}>.`)
-        .addFields(
-          { name: 'Pedido', value: `\`${pedido.codigo}\``, inline: true },
-          { name: 'Cliente', value: `<@${pedido.userId}>`, inline: true }
-        )
-        .setTimestamp();
+        .setTitle(cancelouStaff ? 'PAGAMENTO CANCELADO PELA EQUIPE' : 'PAGAMENTO CANCELADO PELO CLIENTE')
+        .setDescription(linhasLogCancel.join('\n\n'));
       await registrarLog(client, interaction.guild.id, embedLogCancelPg);
 
       await fecharCanalCarrinho(client, pedido.threadId, 'Pedido cancelado', 5000);
