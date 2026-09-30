@@ -37,7 +37,7 @@ function crc16(payload) {
 }
 
 function gerarPayloadPix({ chave, nome, cidade, valor, txid }) {
-  const chaveTratada = String(chave || '').trim();
+  const chaveTratada = String(chave || '').replace(/["'“”‘’`]/g, '').trim();
   const nomeTratado = sanitizarTexto(nome, 25) || 'RECEBEDOR';
   const cidadeTratada = sanitizarTexto(cidade, 15) || 'BRASIL';
   const txidTratado = sanitizarTxid(txid);
