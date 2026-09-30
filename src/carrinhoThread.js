@@ -1,7 +1,6 @@
-const { ChannelType, PermissionsBitField } = require('discord.js');
+const { ChannelType } = require('discord.js');
 const Pedido = require('./models/Pedido');
 const Produto = require('./models/Produto');
-const Config = require('./models/Config');
 const {
   gerarCodigoPedido,
   montarEmbedRevisao,
@@ -17,42 +16,24 @@ async function obterPedidoAberto(guildId, userId) {
 async function criarCanalCarrinho(interaction) {
   const nomeLimpo = interaction.user.username.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 30) || 'cliente';
 
-  const cfg = await Config.findOne({ guildId: interaction.guild.id });
-  const cargoStaff = cfg?.cargoStaffId
-    ? await interaction.guild.roles.fetch(cfg.cargoStaffId).catch(() => null)
-    : null;
+  // O carrinho vira um TÓPICO PRIVADO dentro do canal onde o painel foi publicado.
+  // Se o clique veio de dentro de um tópico, usa o canal pai.
+  const canalBase = interaction.channel.isThread?.() ? interaction.channel.parent : interaction.channel;
 
-  const acesso = [
-    PermissionsBitField.Flags.ViewChannel,
-    PermissionsBitField.Flags.SendMessages,
-    PermissionsBitField.Flags.AttachFiles,
-    PermissionsBitField.Flags.EmbedLinks,
-    PermissionsBitField.Flags.ReadMessageHistory,
-  ];
-
-  const permissoes = [
-    { id: interaction.guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] },
-    { id: interaction.user.id, allow: acesso },
-  ];
-
-  if (cargoStaff) {
-    permissoes.push({ id: cargoStaff.id, allow: acesso });
+  if (!canalBase?.threads) {
+    throw new Error('Não consegui criar o tópico: o painel precisa estar em um canal de texto.');
   }
 
-  // Cria na mesma categoria do painel (se houver).
-  const fonte = interaction.channel.isThread?.() ? interaction.channel.parent : interaction.channel;
-  const categoria =
-    fonte?.parentId && interaction.guild.channels.cache.get(fonte.parentId)?.type === ChannelType.GuildCategory
-      ? fonte.parentId
-      : undefined;
-
-  return interaction.guild.channels.create({
+  const topico = await canalBase.threads.create({
     name: `carrinho-${nomeLimpo}`,
-    type: ChannelType.GuildText,
-    parent: categoria,
-    permissionOverwrites: permissoes,
+    type: ChannelType.PrivateThread,
+    autoArchiveDuration: 1440,
+    invitable: false,
     reason: `Carrinho de compra de ${interaction.user.tag}`,
   });
+
+  await topico.members.add(interaction.user.id);
+  return topico;
 }
 
 async function atualizarMensagemRevisao(client, pedido) {
