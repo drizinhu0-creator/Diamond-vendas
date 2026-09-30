@@ -1,1 +1,16 @@
-
+{
+  "name": "pix-sales-bot",
+  "version": "2.0.0",
+  "description": "Bot de vendas para Discord com produtos em variações, carrinho completo e pagamento Pix manual (chave fixa, sem gateway). Dados no MongoDB.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "deploy-commands": "node deploy-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.7.0",
+    "qrcode": "^1.5.4"
+  }
+}
