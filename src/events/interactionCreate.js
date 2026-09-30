@@ -988,6 +988,16 @@ async function adicionarDoPainel(interaction, client, produtoId, variacaoId) {
 
   if (pedido) {
     canal = await client.channels.fetch(pedido.threadId).catch(() => null);
+
+    // Carrinho antigo que ainda é um CANAL (criado antes da mudança para tópicos):
+    // cancela e apaga para que um novo carrinho seja aberto como tópico.
+    if (canal && !canal.isThread?.()) {
+      pedido.status = 'cancelado';
+      await pedido.save();
+      await fecharCanalCarrinho(client, canal.id, 'Carrinho antigo substituído por tópico', 1000);
+      pedido = null;
+      canal = null;
+    }
   }
 
   if (!pedido || !canal) {
